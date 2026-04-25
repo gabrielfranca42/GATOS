@@ -8,29 +8,18 @@ const dogRoutes = require('./routes/dogRoutes');
 const app = express();
 
 app.use(cors());
+
+// NÃO usa express.json para upload, mas pode manter
 app.use(express.json());
+
 app.use('/uploads', express.static('uploads'));
 
-// conexão MongoDB Atlas
-const uri = process.env.MONGO_URI;
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB conectado'))
+  .catch(err => console.log(err));
 
-if (!uri) {
-  console.log('MONGO_URI não encontrada no .env');
-  process.exit(1);
-}
-
-mongoose.connect(uri)
-  .then(() => {
-    console.log('MongoDB Atlas conectado');
-  })
-  .catch((err) => {
-    console.log('Erro ao conectar no MongoDB:', err);
-  });
-
-// rotas
 app.use('/dogs', dogRoutes);
 
-// porta dinâmica (Render, Railway, etc)
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
