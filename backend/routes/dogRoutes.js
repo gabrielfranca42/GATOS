@@ -4,70 +4,102 @@ const Dog = require('../models/Dog');
 const multer = require('multer');
 
 const storage = multer.diskStorage({
-  destination: './uploads/',
+  destination: (req, file, cb) => {
+    console.log('[MULTER] destination uploads/');
+    cb(null, 'uploads/');
+  },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+    const filename = Date.now() + '-' + file.originalname;
+    console.log('[MULTER] filename:', filename);
+    cb(null, filename);
   }
 });
 
 const upload = multer({ storage });
 
-/* =======================
-   CREATE (com imagem)
-======================= */
 router.post('/', upload.single('image'), async (req, res) => {
+  console.log('=== POST /dogs ===');
+  console.log('content-type:', req.headers['content-type']);
+  console.log('body:', req.body);
+  console.log('file:', req.file);
+
   try {
     const dog = new Dog({
       name: req.body.name,
       image: req.file ? req.file.filename : null
     });
 
-    await dog.save();
-    res.json(dog);
+    const saved = await dog.save();
+
+    console.log('saved:', saved);
+
+    res.json(saved);
   } catch (err) {
+    console.log('error POST:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-/* =======================
-   READ
-======================= */
 router.get('/', async (req, res) => {
-  const dogs = await Dog.find();
-  res.json(dogs);
+  console.log('=== GET /dogs ===');
+
+  try {
+    const dogs = await Dog.find();
+    console.log('count:', dogs.length);
+
+    res.json(dogs);
+  } catch (err) {
+    console.log('error GET:', err);
+    res.status(500).json(err);
+  }
 });
 
-/* =======================
-   UPDATE (COM IMAGEM AGORA)
-======================= */
 router.put('/:id', upload.single('image'), async (req, res) => {
+  console.log('=== PUT /dogs/:id ===');
+  console.log('id:', req.params.id);
+  console.log('content-type:', req.headers['content-type']);
+  console.log('body:', req.body);
+  console.log('file:', req.file);
+
   try {
-    const updateData = {
+    const update = {
       name: req.body.name
     };
 
     if (req.file) {
-      updateData.image = req.file.filename;
+      update.image = req.file.filename;
     }
+
+    console.log('update:', update);
 
     const dog = await Dog.findByIdAndUpdate(
       req.params.id,
-      updateData,
+      update,
       { new: true }
     );
 
+    console.log('updated:', dog);
+
     res.json(dog);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.log('error PUT:', err);
+    res.status(500).json(err);
   }
 });
 
-/* =======================
-   DELETE
-======================= */
 router.delete('/:id', async (req, res) => {
-  await Dog.findByIdAndDelete(req.params.id);
-  res.json({ message: 'Deletado' });
+  console.log('=== DELETE /dogs/:id ===');
+  console.log('id:', req.params.id);
+
+  try {
+    await Dog.findByIdAndDelete(req.params.id);
+    console.log('deleted');
+
+    res.json({ message: 'deleted' });
+  } catch (err) {
+    console.log('error DELETE:', err);
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
