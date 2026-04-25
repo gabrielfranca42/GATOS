@@ -1,38 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const Dog = require('../models/Dog');
-const multer = require('multer');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    console.log('[MULTER] destination uploads/');
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const filename = Date.now() + '-' + file.originalname;
-    console.log('[MULTER] filename:', filename);
-    cb(null, filename);
-  }
-});
-
-const upload = multer({ storage });
-
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', async (req, res) => {
   console.log('=== POST /dogs ===');
-  console.log('content-type:', req.headers['content-type']);
   console.log('body:', req.body);
-  console.log('file:', req.file);
 
   try {
     const dog = new Dog({
-      name: req.body.name,
-      image: req.file ? req.file.filename : null
+      age: req.body.age,
+      name: req.body.name
     });
 
     const saved = await dog.save();
-
     console.log('saved:', saved);
-
     res.json(saved);
   } catch (err) {
     console.log('error POST:', err);
@@ -42,11 +23,9 @@ router.post('/', upload.single('image'), async (req, res) => {
 
 router.get('/', async (req, res) => {
   console.log('=== GET /dogs ===');
-
   try {
-    const dogs = await Dog.find();
+    const dogs = await Dog.find().sort({ createdAt: -1 });
     console.log('count:', dogs.length);
-
     res.json(dogs);
   } catch (err) {
     console.log('error GET:', err);
@@ -54,32 +33,22 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.put('/:id', upload.single('image'), async (req, res) => {
+router.put('/:id', async (req, res) => {
   console.log('=== PUT /dogs/:id ===');
   console.log('id:', req.params.id);
-  console.log('content-type:', req.headers['content-type']);
   console.log('body:', req.body);
-  console.log('file:', req.file);
 
   try {
-    const update = {
-      name: req.body.name
-    };
-
-    if (req.file) {
-      update.image = req.file.filename;
-    }
-
-    console.log('update:', update);
-
     const dog = await Dog.findByIdAndUpdate(
       req.params.id,
-      update,
+      {
+        age: req.body.age,
+        name: req.body.name
+      },
       { new: true }
     );
 
     console.log('updated:', dog);
-
     res.json(dog);
   } catch (err) {
     console.log('error PUT:', err);
@@ -94,7 +63,6 @@ router.delete('/:id', async (req, res) => {
   try {
     await Dog.findByIdAndDelete(req.params.id);
     console.log('deleted');
-
     res.json({ message: 'deleted' });
   } catch (err) {
     console.log('error DELETE:', err);

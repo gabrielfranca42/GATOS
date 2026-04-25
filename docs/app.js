@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const form = document.getElementById('form');
   const list = document.getElementById('list');
+  const ageInput = document.getElementById('age');
   const nameInput = document.getElementById('name');
-  const imageInput = document.getElementById('image');
 
   let editId = null;
 
@@ -12,24 +12,24 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append('name', nameInput.value);
-
-    if (imageInput.files[0]) {
-      formData.append('image', imageInput.files[0]);
-    }
+    const dogData = {
+      age: ageInput.value,
+      name: nameInput.value
+    };
 
     try {
       if (editId) {
         await fetch(`${API}/${editId}`, {
           method: 'PUT',
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dogData)
         });
         editId = null;
       } else {
         await fetch(API, {
           method: 'POST',
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dogData)
         });
       }
 
@@ -54,9 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         div.innerHTML = `
           <h3>${dog.name}</h3>
-          <img src="https://gatos-46yy.onrender.com/uploads/${dog.image}" />
-          <button class="delete" data-id="${dog._id}">Excluir</button>
-          <button class="edit" data-id="${dog._id}" data-name="${dog.name}">Editar</button>
+          <p>🐕 Idade: ${dog.age} ano${dog.age > 1 ? 's' : ''}</p>
+          <button class="delete" data-id="${dog._id}">🗑️ Deletar</button>
+          <button class="edit" data-id="${dog._id}" data-age="${dog.age}" data-name="${dog.name}">✏️ Editar</button>
         `;
 
         list.appendChild(div);
@@ -73,12 +73,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // DELETE
     if (e.target.classList.contains('delete')) {
-      await fetch(`${API}/${id}`, { method: 'DELETE' });
-      loadDogs();
+      if (confirm('Tem certeza que deseja deletar este cachorro?')) {
+        await fetch(`${API}/${id}`, { method: 'DELETE' });
+        loadDogs();
+      }
     }
 
     // EDIT
     if (e.target.classList.contains('edit')) {
+      ageInput.value = e.target.dataset.age;
       nameInput.value = e.target.dataset.name;
       editId = id;
     }
