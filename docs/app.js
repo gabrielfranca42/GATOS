@@ -1,4 +1,4 @@
-const API = 'https://gatos-46yy.onrender.com/dogs';
+const API = 'http://localhost:3000/dogs';
 
 const form = document.getElementById('form');
 const list = document.getElementById('list');
@@ -15,7 +15,6 @@ form.addEventListener('submit', async (e) => {
     body: formData
   });
 
-  form.reset();
   loadDogs();
 });
 
@@ -31,7 +30,7 @@ async function loadDogs() {
 
     div.innerHTML = `
       <h3>${dog.name}</h3>
-      <img src="https://gatos-46yy.onrender.com/uploads/${dog.image}" />
+      <img src="http://localhost:3000/uploads/${dog.image}" />
       <br>
       <button onclick="deleteDog('${dog._id}')">Excluir</button>
     `;
