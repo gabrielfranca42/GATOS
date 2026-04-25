@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
       age: document.getElementById('age').value,
       name: document.getElementById('name').value
     });
+    //ERA A PORRA DO AMBIENTE
     
     try {
       const res = await fetch(API, {
