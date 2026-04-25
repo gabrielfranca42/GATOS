@@ -12,29 +12,59 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// CREATE
+/* =======================
+   CREATE (com imagem)
+======================= */
 router.post('/', upload.single('image'), async (req, res) => {
-  const dog = new Dog({
-    name: req.body.name,
-    image: req.file.filename
-  });
-  await dog.save();
-  res.json(dog);
+  try {
+    const dog = new Dog({
+      name: req.body.name,
+      image: req.file ? req.file.filename : null
+    });
+
+    await dog.save();
+    res.json(dog);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// READ ALL
+/* =======================
+   READ
+======================= */
 router.get('/', async (req, res) => {
   const dogs = await Dog.find();
   res.json(dogs);
 });
 
-// UPDATE
-router.put('/:id', async (req, res) => {
-  const dog = await Dog.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(dog);
+/* =======================
+   UPDATE (COM IMAGEM AGORA)
+======================= */
+router.put('/:id', upload.single('image'), async (req, res) => {
+  try {
+    const updateData = {
+      name: req.body.name
+    };
+
+    if (req.file) {
+      updateData.image = req.file.filename;
+    }
+
+    const dog = await Dog.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    res.json(dog);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// DELETE
+/* =======================
+   DELETE
+======================= */
 router.delete('/:id', async (req, res) => {
   await Dog.findByIdAndDelete(req.params.id);
   res.json({ message: 'Deletado' });
