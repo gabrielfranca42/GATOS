@@ -6,23 +6,28 @@ const dogRoutes = require('./routes/dogRoutes');
 
 const app = express();
 
-// CORS para TODOS os origens (GitHub Pages incluso)
-app.use(cors({
-  origin: ['https://gabrielfranca42.github.io', 'http://localhost:3000', '*']
-}));
-
-app.use(express.json({ limit: '10mb' }));
+app.use(cors({ origin: '*' }));
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/uploads', express.static('uploads'));
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'API OK',
+    mongo: mongoose.connection.readyState === 1 ? 'Conectado' : 'Erro'
+  });
+});
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB conectado'))
-  .catch(err => console.log('MongoDB erro:', err));
+// Conecta na SUA database "gatos"
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 10000
+});
+
+mongoose.connection.on('connected', () => console.log('MongoDB conectado'));
+mongoose.connection.on('error', (err) => console.error('MongoDB erro:', err));
 
 app.use('/dogs', dogRoutes);
 
-app.get('/', (req, res) => res.json({ message: 'API Dogs OK' }));
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('Servidor porta', PORT));
+app.listen(PORT, () => console.log('Servidor porta ' + PORT));
