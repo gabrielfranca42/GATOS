@@ -2,20 +2,20 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Cadastro de Cachorros</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <title>CRUD Dogs</title>
 </head>
 <body>
 
-<h1>Cadastro de Cachorros 🐶</h1>
+<h1>CRUD de Cachorros 🐶</h1>
 
+<!-- CREATE / UPDATE -->
 <form id="form">
   <input type="text" id="name" placeholder="Nome do cachorro" required>
-  <input type="file" id="image" required>
-  <button type="submit">Cadastrar</button>
+  <input type="file" id="image">
+  <button type="submit">Salvar</button>
 </form>
 
+<!-- LISTA -->
 <div id="list"></div>
 
 <script src="app.js"></script>
